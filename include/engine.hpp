@@ -1,0 +1,1 @@
+// value class function declaration and headers
