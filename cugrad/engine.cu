@@ -49,7 +49,8 @@ __global__ void tanh_kernel1(float* a, float* t, int m, int n){
     int col = threadIdx.y + (blockDim.y * blockIdx.y);
     if(row < m && col < n){
         int idx = row * n + col;
-        t[idx] = (expf(2*a[idx]) - 1) / (expf(2*a[idx]) + 1);
+        t[idx] = tanhf(a[idx]);
+        //t[idx] = (expf(2*a[idx]) - 1) / (expf(2*a[idx]) + 1);
     }
 
 }
