@@ -35,6 +35,14 @@ Value Value::operator^(const Value& other) const{
 
 
 // tanh activation function
+Value Value::tanh() const{
+    float x = this->data;
+    float t = (std::exp(2 * x) - 1) / (std::exp(2 * x) + 1);
+    Value out(t, {const_cast<Value*>(this)}, "tanh");
+    
+
+    return out;
+}
 
 
 int main(){
