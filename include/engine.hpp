@@ -6,6 +6,8 @@
 #include <string>
 #include <functional>
 #include <cmath>
+#include <set>
+#include <memory>
 
 // value class declaration
 class Value
@@ -36,7 +38,10 @@ class Value
     Value operator/(const Value&) const;
     Value operator^(const Value&) const;
 
+
     Value tanh() const;
+
+    void backward() const;
 
    
 

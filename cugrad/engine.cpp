@@ -44,6 +44,26 @@ Value Value::tanh() const{
     return out;
 }
 
+void Value::backward() const{
+    // topological sort
+    std::vector<Value*> topo;
+    std::set<Value*> visited;
+    
+    std::function<void(Value*)> build_topo = [&](Value* v){
+        if (visited.find(v) == visited.end()){
+            visited.insert(v);
+            for(Value* child : v->_prev){
+                build_topo(child);
+            }
+            topo.push_back(v);
+        }
+    };
+    
+       
+    
+    
+}
+
 
 int main(){
     Value a(6.0f);
