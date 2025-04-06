@@ -6,30 +6,55 @@
 
 // overloaded functions
 Value Value::operator+(const Value& other) const{
-    Value out(this->data + other.data, {const_cast<Value*>(this), const_cast<Value*>(&other)}, "+");
+    Value* a = const_cast<Value*>(this);
+    Value* b = const_cast<Value*>(&other);
+    Value out(a->data + b->data, {a,b}, "+");
+    out._backward = [a,b, &out](){
+        a->grad += 1.0f * out.grad;
+        b->grad += 1.0f * out.grad;
+    };
     return out;
 }
 
 Value Value::operator-(const Value& other) const{
-    Value out(this->data - other.data, {const_cast<Value*>(this), const_cast<Value*>(&other)}, "-");
+    Value* a = const_cast<Value*>(this);
+    Value* b = const_cast<Value*>(&other);
+    Value out(a->data - b->data, {a,b}, "-");
+    out._backward = [a,b, &out](){
+        a->grad += 1.0f * out.grad;
+        b->grad -= 1.0f * out.grad;
+    };
     return out;
 }
 
 Value Value::operator*(const Value& other) const{
-    Value out(this->data * other.data, {const_cast<Value*>(this), const_cast<Value*>(&other)}, "*");
+    Value* a = const_cast<Value*>(this);
+    Value* b = const_cast<Value*>(&other);
+    Value out(a->data * b->data, {a,b}, "*");
+    out._backward = [a,b, &out](){
+        a->grad += b->data * out.grad;
+        b->grad += a->data * out.grad;
+    };
     return out;
 }
 
 Value Value::operator/(const Value& other) const{
-    if (other.data == 0.0f) {
+    Value* a = const_cast<Value*>(this);
+    Value* b = const_cast<Value*>(&other);
+    if (b->data == 0.0f) {
         throw std::runtime_error("Division by zero");
     }
-    Value out(this->data / other.data, {const_cast<Value*>(this), const_cast<Value*>(&other)}, "/");
+    Value out(a->data / b->data, {a,b}, "/");
     return out;
 }
 
 Value Value::operator^(const Value& other) const{
-    Value out(std::pow(this->data, other.data), {const_cast<Value*>(this), const_cast<Value*>(&other)}, "^");
+    Value* a = const_cast<Value*>(this);
+    Value* b = const_cast<Value*>(&other);
+    Value out(std::pow(a->data, b->data), {a,b}, "^");
+    out._backward = [a,b, &out](){
+        a->grad += b->data * std::pow(a->data, b->data - 1) * out.grad;
+    };
     return out;
 }
 
@@ -38,9 +63,12 @@ Value Value::operator^(const Value& other) const{
 Value Value::tanh() const{
     float x = this->data;
     float t = (std::exp(2 * x) - 1) / (std::exp(2 * x) + 1);
-    Value out(t, {const_cast<Value*>(this)}, "tanh");
-    
-
+    Value* a = const_cast<Value*>(this);
+    Value out(t, {a}, "tanh");
+    out._backward = [a, &out](){
+        a->grad += (1 - out.data * out.data) * out.grad;
+        
+    };
     return out;
 }
 
@@ -58,67 +86,51 @@ void Value::backward() const{
             topo.push_back(v);
         }
     };
-    
-       
-    
-    
+    build_topo(const_cast<Value*>(this));
+    std::reverse(topo.begin(), topo.end());
+    const_cast<Value*>(this)->grad = 1.0f;
+    for(Value* node : topo){
+        node->_backward();
+    }
 }
 
 
 int main(){
-    Value a(6.0f);
-    Value b(3.0f);
 
-    std::vector<Value*> prev = {&a, &b};
-    Value c = a + b;
-    Value d = a - b;
-    Value e = a * b;
-    Value f = a / b;
-    Value g = a ^ b;
+    // inputs
+    Value x1(2.0f, {}, "x1");
+    Value x2(0.0f, {}, "x2");
 
-    // Access and print the data, _prev, and _op of v3
-    std::cout << "Value data: " << c.data << std::endl;
-    std::cout << "Value operation: " << c._op << std::endl;
+    // weights
+    Value w1(-3.0f, {}, "w1");
+    Value w2(1.0f, {}, "w2");
+
+    // bias
+    Value b(6.7f, {}, "b");
+
+    Value x1w1 = x1 * w1;
+    Value x2w2 = x2 * w2;
+    Value x1w1x2w2 = x1w1 + x2w2;
+    Value n = x1w1x2w2 + b;
+
+    // activation
+    Value o = n.tanh();
+
+    
+    std::cout << "Forward pass results:" << std::endl;
+    std::cout << "o: " << o.data << std::endl;
 
 
-    std::cout << "Value predecessors: ";
-    for (const auto& p : c._prev) {
-        std::cout << p->data << " ";
-    }
-    std::cout << std::endl;
-
-    std::cout << "Value data: " << d.data << std::endl;
-    std::cout << "Value operation: " << d._op << std::endl;
-    std::cout << "Value predecessors: ";
-    for (const auto& p : d._prev) {
-        std::cout << p->data << " ";
-    }
-
-    std::cout << std::endl;
-
-    std::cout << "Value data: " << e.data << std::endl;
-    std::cout << "Value operation: " << e._op << std::endl;
-    std::cout << "Value predecessors: ";
-    for (const auto& p : e._prev) {
-        std::cout << p->data << " ";
-    }
-    std::cout << std::endl;
-
-    std::cout << "Value data: " << f.data << std::endl;
-    std::cout << "Value operation: " << f._op << std::endl;
-    std::cout << "Value predecessors: ";
-    for (const auto& p : f._prev) {
-        std::cout << p->data << " ";
-    }
-    std::cout << std::endl;
-
-    std::cout << "Value data: " << g.data << std::endl;
-    std::cout << "Value operation: " << g._op << std::endl;
-    std::cout << "Value predecessors: ";
-    for (const auto& p : g._prev) {
-        std::cout << p->data << " ";
-    }
-    std::cout << std::endl;
+    // backward pass
+    // o.grad = 1.0f;
+    o.backward();
+    std::cout << "Backward pass results:" << std::endl;
+    std::cout << "Grad for x1: " << x1.grad << std::endl;
+    std::cout << "Grad for x2: " << x2.grad << std::endl;
+    std::cout << "Grad for w1: " << w1.grad << std::endl;
+    std::cout << "Grad for w2: " << w2.grad << std::endl;
+    std::cout << "Grad for b: " << b.grad << std::endl;
+    
 
     return 0;
 }

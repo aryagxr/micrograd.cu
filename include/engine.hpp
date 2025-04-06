@@ -8,6 +8,7 @@
 #include <cmath>
 #include <set>
 #include <memory>
+#include <algorithm>
 
 // value class declaration
 class Value
