@@ -5,6 +5,17 @@
 #include <iostream>
 #include <math.h>
 
-__global__ void backward_kernel1(){
-    
-}
+/* Add kernel wrappers (kernel launch)
+This will be the API wrapper
+Manage memory and allocate memory
+Memory transfer
+Free device and host memory
+*/
+
+
+
+
+
+
+
+
