@@ -13,11 +13,36 @@ class Neuron
     public:
         
         Neuron(int n_in);
-        Value forward(const std::vector<Value>& x);
+        Value call(const std::vector<Value>& x);
         std::vector<Value*> parameters();
     
 
 };
+
+class Layer
+{
+    private:
+        std::vector<Neuron> neurons;
+
+
+    public:
+        Layer(int n_in, int n_out);
+        std::vector<Value> call(const std::vector<Value>& x);
+        std::vector<Value*> parameters();
+};
+
+
+class MLP
+{
+    private:
+        std::vector<Layer> layers;
+
+    public:
+        MLP(int n_in, const std::vector<int>& n_out);
+        std::vector<Value> call(const std::vector<Value>& x);
+        std::vector<Value*> parameters();
+};
+
 
 
 
