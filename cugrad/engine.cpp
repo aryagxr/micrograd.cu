@@ -95,43 +95,5 @@ void Value::backward() const{
 }
 
 
-int main(){
 
-    // inputs
-    Value x1(2.0f, {}, "x1");
-    Value x2(0.0f, {}, "x2");
-
-    // weights
-    Value w1(-3.0f, {}, "w1");
-    Value w2(1.0f, {}, "w2");
-
-    // bias
-    Value b(6.7f, {}, "b");
-
-    Value x1w1 = x1 * w1;
-    Value x2w2 = x2 * w2;
-    Value x1w1x2w2 = x1w1 + x2w2;
-    Value n = x1w1x2w2 + b;
-
-    // activation
-    Value o = n.tanh();
-
-    
-    std::cout << "Forward pass results:" << std::endl;
-    std::cout << "o: " << o.data << std::endl;
-
-
-    // backward pass
-    // o.grad = 1.0f;
-    o.backward();
-    std::cout << "Backward pass results:" << std::endl;
-    std::cout << "Grad for x1: " << x1.grad << std::endl;
-    std::cout << "Grad for x2: " << x2.grad << std::endl;
-    std::cout << "Grad for w1: " << w1.grad << std::endl;
-    std::cout << "Grad for w2: " << w2.grad << std::endl;
-    std::cout << "Grad for b: " << b.grad << std::endl;
-    
-
-    return 0;
-}
 
